@@ -17,7 +17,6 @@
 
 #include <cstdio>
 #include "miosix.h"
-#include "miosix/kernel/buffer_queue.h"
 #include "miosix/kernel/scheduler/scheduler.h"
 #include "util/software_i2c.h"
 #include "Microphone.h"
@@ -46,7 +45,7 @@ static void IRQdmaRefill()
 {
     unsigned short *buffer;
     
-	if(bq->IRQgetWritableBuffer(buffer)==false)
+	if(bq->tryGetWritableBuffer(buffer)==false)
 	{
 		enobuf=true;
 		return;
@@ -72,6 +71,7 @@ static void dmaRefill()
 	IRQdmaRefill();
 }
 
+
 /**
  * DMA end of transfer interrupt
  */
@@ -82,17 +82,17 @@ void __attribute__((naked)) DMA1_Stream3_IRQHandler()
     restoreContext();
 }
 
+
 /**
  * DMA end of transfer interrupt actual implementation
  */
 void __attribute__((used)) I2SdmaHandlerImpl()
 {
-    
 	DMA1->LIFCR=DMA_LIFCR_CTCIF3  |
                 DMA_LIFCR_CTEIF3  |
                 DMA_LIFCR_CDMEIF3 |
                 DMA_LIFCR_CFEIF3;
-	bq->IRQbufferFilled(bufferSize);
+	bq->bufferFilled(bufferSize);
 	IRQdmaRefill();
 	waiting->IRQwakeup();
 	if(waiting->IRQgetPriority()>Thread::IRQgetCurrentThread()->IRQgetPriority())
@@ -132,8 +132,9 @@ static const unsigned short *getReadableBuffer()
 	FastInterruptDisableLock dLock;
 	const unsigned short *result;
         unsigned int size;
-	while(bq->IRQgetReadableBuffer(result, size)==false)
+	while(bq->tryGetReadableBuffer(result, size)==false)
 	{
+		printf ("Ciao\n");  
 		waiting->IRQwait();
 		{
 			FastInterruptEnableLock eLock(dLock);
@@ -146,7 +147,7 @@ static const unsigned short *getReadableBuffer()
 static void bufferEmptied()
 {
 	FastInterruptDisableLock dLock;
-	bq->IRQbufferEmptied();
+	bq->bufferEmptied();
 }
 
 
@@ -160,7 +161,7 @@ Microphone::Microphone() {
 
 }
 
-void Microphone::init(function<void (unsigned short*, unsigned int)> cback, unsigned int bufsize){
+void Microphone::init(std::tr1::function<void (unsigned short*, unsigned int)> cback, unsigned int bufsize){
     callback = cback;
     PCMsize = bufsize;
 }
@@ -224,15 +225,15 @@ void Microphone::mainLoop(){
             if(enobuf){
                 enobuf = false;
                 dmaRefill();
-            }
+            }        	
             if(processPDM(getReadableBuffer(),bufferSize) == true){
                 // transcode until the specified number of PCM samples
                 break;
             }
-            bufferEmptied();  
+            bufferEmptied();
 
         }
-        
+ 
         // swaps the ready and the processing buffer: allows double buffering
         //on the callback side
         unsigned short* tmp;
@@ -240,6 +241,7 @@ void Microphone::mainLoop(){
         readyBuffer = processingBuffer;
         processingBuffer = tmp;
         
+
         if (!first){
             // if the previous callback is still running, wait for it to end.
             // this implies that some samples may be lost
@@ -249,7 +251,6 @@ void Microphone::mainLoop(){
         }
         
         pthread_create(&cback,NULL,callbackLauncher,reinterpret_cast<void*>(this));
-        
     }
     
 }

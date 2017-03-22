@@ -34,17 +34,13 @@
  * 
  */
 
+#ifndef MICROPHONE_H
+#define	MICROPHONE_H
 
 #include "miosix.h"
 #include <tr1/functional>
 
 using namespace std::tr1;
-
-
-
-#ifndef MICROPHONE_H
-#define	MICROPHONE_H
-
 
 /*
  * The Microphone class is the singleton that handles everything: the device 
