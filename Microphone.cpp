@@ -134,7 +134,6 @@ static const unsigned short *getReadableBuffer()
         unsigned int size;
 	while(bq->tryGetReadableBuffer(result, size)==false)
 	{
-		printf ("Ciao\n");  
 		waiting->IRQwait();
 		{
 			FastInterruptEnableLock eLock(dLock);
