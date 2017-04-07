@@ -1,0 +1,9 @@
+https://github.com/fsku/GuitarTuner/blob/Clean/GuitarTuner/main.c
+https://www.reddit.com/r/stm32f4/comments/1vutow/can_i_use_the_stm32s_dsp_instructions_to_sample/
+https://www.dropbox.com/s/x1e2jjw75azofxl/ARMCM4-STM32F407-DISCOVERY-TEST-TUNER-A.rar?dl=0
+http://www.instructables.com/id/Arduino-Guitar-Tuner/step10/Program/
+http://www.instructables.com/id/Arduino-Frequency-Detection/step4/Generalized-pitch-detection/
+
+
+python ./plot.py /dev/ttyUSB0 19200
+sudo screen /dev/ttyUSB0 19200

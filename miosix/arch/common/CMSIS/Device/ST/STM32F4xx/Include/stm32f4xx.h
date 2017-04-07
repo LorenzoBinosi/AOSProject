@@ -122,6 +122,9 @@
   * @}
   */
 
+// Added by Matheus 
+#define STM32F407xx
+
 /** @addtogroup Device_Included
   * @{
   */

@@ -75,6 +75,8 @@
 
 #define __CORTEX_M                (0x04)                                   /*!< Cortex-M Core                    */
 
+// added to use the math_arm lib BY MATHEUs
+#define __FPU_PRESENT 1 
 
 #if   defined ( __CC_ARM )
   #define __ASM            __asm                                      /*!< asm keyword for ARM Compiler          */
