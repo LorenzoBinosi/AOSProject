@@ -17,7 +17,7 @@
 
 
 
-#define SAMPLES 512
+#define SAMPLES 8192
 #define FFT_SIZE SAMPLES/2
 
 using namespace std;
@@ -60,11 +60,11 @@ void visualize(uint16_t* PCM, uint16_t  size){
     /* Calculates maxValue and returns corresponding value */
     arm_max_f32(output, FFT_SIZE, &maxValue, &maxIndex);
 
-    //printf("%f:%d\n", (float32_t) maxValue, (uint32_t)maxIndex); // prints key:val
+    printf("Value: %d. Index: %d. Aprox Freq: %d hz\n", (uint16_t) maxValue, (uint32_t)maxIndex, (uint32_t)((float32_t) maxIndex * 10.77)); // prints key:val
 
-	  
-    /*for(int i=0; i < size/2 ; i++ ){
-    	printf("%d:%f\n", i, (float32_t)output[(uint16_t)i] ); // prints key:val
+	 /* 
+    for(int i=0; i < size/2 ; i++ ){
+    	printf("%d:%d\n", i, (uint16_t)output[(uint16_t)i] ); // prints key:val
     }*/
 }
 
