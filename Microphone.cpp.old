@@ -30,12 +30,12 @@ typedef Gpio<GPIOC_BASE,3> dout;
 static const int bufferSize=512; //Buffer RAM is 4*bufferSize bytes
 static const int bufNum = 2;
 static Thread *waiting;
-static BufferQueue<unsigned short,bufferSize,bufNum> *bq;
+static BufferQueue<uint16_t,bufferSize,bufNum> *bq;
 static bool enobuf=true;
 static const char filterOrder = 4;
 static const short oversample = 16;
-static unsigned short intReg[filterOrder] = {0,0,0,0};
-static unsigned short combReg[filterOrder] = {0,0,0,0};
+static uint16_t intReg[filterOrder] = {0,0,0,0};
+static uint16_t combReg[filterOrder] = {0,0,0,0};
 static signed char pdmLUT[] = {-1, 1};
 
 /**
@@ -43,7 +43,7 @@ static signed char pdmLUT[] = {-1, 1};
  */
 static void IRQdmaRefill()
 {
-    unsigned short *buffer;
+    uint16_t *buffer;
     
 	if(bq->tryGetWritableBuffer(buffer)==false)
 	{
@@ -71,6 +71,7 @@ static void dmaRefill()
 	IRQdmaRefill();
 }
 
+
 /**
  * DMA end of transfer interrupt
  */
@@ -81,12 +82,12 @@ void __attribute__((naked)) DMA1_Stream3_IRQHandler()
     restoreContext();
 }
 
+
 /**
  * DMA end of transfer interrupt actual implementation
  */
 void __attribute__((used)) I2SdmaHandlerImpl()
 {
-    
 	DMA1->LIFCR=DMA_LIFCR_CTCIF3  |
                 DMA_LIFCR_CTEIF3  |
                 DMA_LIFCR_CDMEIF3 |
@@ -126,10 +127,10 @@ static void atomicTestAndWaitUntil(volatile T& variable, T value)
  * Helper function that waits until a buffer is available for reading
  * \return a readable buffer from bq
  */
-static const unsigned short *getReadableBuffer()
+static const uint16_t *getReadableBuffer()
 {
 	FastInterruptDisableLock dLock;
-	const unsigned short *result;
+	const uint16_t *result;
         unsigned int size;
 	while(bq->tryGetReadableBuffer(result, size)==false)
 	{
@@ -159,15 +160,15 @@ Microphone::Microphone() {
 
 }
 
-void Microphone::init(std::tr1::function<void (unsigned short*, unsigned int)> cback, unsigned int bufsize){
+void Microphone::init(std::tr1::function<void (uint16_t*, unsigned int)> cback, unsigned int bufsize){
     callback = cback;
     PCMsize = bufsize;
 }
 
 void Microphone::start(){
     recording = true;
-    readyBuffer = (unsigned short*) malloc(sizeof(unsigned short) * PCMsize);
-    processingBuffer = (unsigned short*) malloc(sizeof(unsigned short) * PCMsize);
+    readyBuffer = (uint16_t*) malloc(sizeof(uint16_t) * PCMsize);
+    processingBuffer = (uint16_t*) malloc(sizeof(uint16_t) * PCMsize);
     {
         FastInterruptDisableLock dLock;
         //Enable DMA1 and SPI2/I2S2 and GPIOB and GPIOC
@@ -214,7 +215,7 @@ void Microphone::mainLoop(){
     waiting = Thread::getCurrentThread();
     pthread_t cback;
     bool first=true;
-    bq=new BufferQueue<unsigned short,bufferSize,bufNum>();
+    bq=new BufferQueue<uint16_t,bufferSize,bufNum>();
     NVIC_EnableIRQ(DMA1_Stream3_IRQn);  
     while(recording){
         PCMindex = 0;      
@@ -223,22 +224,23 @@ void Microphone::mainLoop(){
             if(enobuf){
                 enobuf = false;
                 dmaRefill();
-            }
+            }        	
             if(processPDM(getReadableBuffer(),bufferSize) == true){
                 // transcode until the specified number of PCM samples
                 break;
             }
-            bufferEmptied();  
+            bufferEmptied();
 
         }
-        
+ 
         // swaps the ready and the processing buffer: allows double buffering
         //on the callback side
-        unsigned short* tmp;
+        uint16_t* tmp;
         tmp = readyBuffer;
         readyBuffer = processingBuffer;
         processingBuffer = tmp;
         
+
         if (!first){
             // if the previous callback is still running, wait for it to end.
             // this implies that some samples may be lost
@@ -248,7 +250,6 @@ void Microphone::mainLoop(){
         }
         
         pthread_create(&cback,NULL,callbackLauncher,reinterpret_cast<void*>(this));
-        
     }
     
 }
@@ -261,17 +262,12 @@ void Microphone::execCallback() {
     callback(readyBuffer,PCMsize);
 }
 
-bool Microphone::processPDM(const unsigned short *pdmbuffer, int size) {
+bool Microphone::processPDM(const uint16_t *pdmbuffer, int size) {
     int remaining = PCMsize - PCMindex;
     int length = std::min(remaining, size); 
     // convert couples 16 pdm one-bit samples in one 16-bit PCM sample
-    for (int i=0; i < length; i++)
-    {    
-	//Dropping 3 samples on 4 for a decimation of 64 instead of 16
-        for (int j=0; j < 3; j++, i++)
-		PDMFilter(pdmbuffer, i);
+    for (int i=0; i < length; i++){    
         processingBuffer[PCMindex++] = PDMFilter(pdmbuffer, i);
-
     }
     if (PCMindex < PCMsize) //if produced PCM sample are not enough 
         return false; 
@@ -283,7 +279,7 @@ bool Microphone::processPDM(const unsigned short *pdmbuffer, int size) {
  * This function takes care of the transcoding from 16 PDM bit to 1 PCM sample
  * via CIC filtering. Decimator rate: 16:1, CIC stages: 4.
  */
-unsigned short Microphone::PDMFilter(const unsigned short* PDMBuffer, unsigned int index) {
+uint16_t Microphone::PDMFilter(const uint16_t* PDMBuffer, unsigned int index) {
     
     short combInput, combRes;
     

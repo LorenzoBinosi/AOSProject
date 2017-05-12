@@ -94,7 +94,7 @@ private:
     volatile bool recording;    
     pthread_t mainLoopThread;
     bool processPDM(const unsigned short *pdmbuffer, int size);
-    unsigned short PDMFilter(const unsigned short* PDMBuffer, unsigned int index);
+    unsigned short PDMFilter(unsigned int); 
     void mainLoop();
     void execCallback();
     static void* callbackLauncher(void* arg);
