@@ -1,52 +1,54 @@
 #include <stdio.h>
 #include "Tuning.h"
+#include "Note.h"
 
 Tuning::Tuning ()
 {
-	s1 = 329.628;
-	s2 = 246.942;
-	s3 = 195.998;
-	s4 = 146.832;
-	s5 = 110.00;
-	s6 = 82.407;
-	tuningname = "E standard";
+	setTune(TuningType::E_STANDARD);
 }
 
-Tuning::Tuning (TuningType tuningtype)
+Tuning::Tuning (TuningType tuningType)
 {
-	switch (tuningtype)
+	setTune(tuningType);
+} 
+
+void Tuning::setTune(TuningType tuningType)
+{
+	switch (tuningType)
 	{
-		case 2: s1 = 311.127;
-			s2 = 233.082;
-			s3 = 184.997;
-			s4 = 138.591;
-			s5 = 103.826;
-			s6 = 77.782;
+		case 2: s[1] = Eb_4;
+			s[2] = Bb_3;
+			s[3] = Gb_3;
+			s[4] = Db_3;
+			s[5] = Ab_2;
+			s[6] = Eb_2;
 			tuningname = "Eb standard";
 			break;
-		case 3: s1 = 293.665;
-			s2 = 246.942;
-			s3 = 195.998;
-			s4 = 146.832;
-			s5 = 110.00;
-			s6 = 82.407;
+		case 3: s[1] = E_4;
+			s[2] = B_3;
+			s[3] = G_3;
+			s[4] = D_3;
+			s[5] = A_2;
+			s[6] = D_2;
 			tuningname = "Drop D";
 			break;
-		default: s1 = 329.628;
-			s2 = 246.942;
-			s3 = 195.998;
-			s4 = 146.832;
-			s5 = 110.00;
-			s6 = 82.407;
+		default: s[1] = E_4;
+			s[2] = B_3;
+			s[3] = G_3;
+			s[4] = D_3;
+			s[5] = A_2;
+			s[6] = E_2;
 			tuningname = "E standard";
 			break;
 	}
-} 
+}
 
-float Tuning::getFirstStringFrequency() {return s1;}
-float Tuning::getSecondStringFrequency() {return s2;}
-float Tuning::getThirdStringFrequency() {return s3;}
-float Tuning::getFourthStringFrequency() {return s4;}
-float Tuning::getFifthStringFrequency() {return s5;}
-float Tuning::getSixthStringFrequency() {return s6;}	
+float Tuning::getStringFrequency(int stringNumber) 
+{
+	if (stringNumber > 0 && stringNumber < 7)
+		return s[stringNumber];
+	else
+		return -1;
+}
+
 std::string Tuning::getTuningName () {return tuningname;}
