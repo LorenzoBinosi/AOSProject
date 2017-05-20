@@ -13,7 +13,7 @@ enum TuningType
 class Tuning
 {
 	private:
-		float s[];
+		float* s;
 		std::string tuningname;
 		void setTune(TuningType);
 

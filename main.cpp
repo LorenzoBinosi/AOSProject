@@ -7,6 +7,8 @@
 
 using namespace std;
 
+void tune(Tuning);
+
 int main()
 {
 	char c, command;
@@ -38,7 +40,8 @@ int main()
 				case 'c': delete tuning;
 					  tuning = new Tuning (TuningType::DROP_D);
 					  break;
-				case 't': break;
+				case 't': tune (*tuning);
+					  break;
 				case 's': cout << "Actual tuning: " << tuning->getTuningName() << endl; 
 					  break;
 				case 'h': cout << commands;
@@ -54,4 +57,35 @@ int main()
 	} while (quit == false);
 	while (true);
   	return 0;
+}
+
+void tune(Tuning tuning)
+{
+	//Turning on the microphone with the FFT function, we must add a floating pointer in order to change the frequency of the note in which we want to tune
+	float *currentNote;
+	int i;
+
+	cout << "Instructions:" << endl;
+	cout << "In order to tune your guitar play each string untill the green led is stable. If the red led is blinking, it means that you should pull the string, otherwise if the blue led is blinking, it means that you should relax the string." << endl;
+	for (i = 6; i > 0; i--)
+	{
+		cout << "<<Tuning the " << i;
+		switch (i)
+		{
+			case 1: cout << "st ";
+				break;
+			case 2: cout << "nd ";
+				break;
+			case 3: cout << "rd ";
+				break;
+			default: cout << "th ";
+				 break;
+		}
+		if (i == 1)
+			cout << " string. Press 'Enter' or the user button to end the tuning.>>" << endl;
+		else
+			cout << " string. Press 'Enter' or the user button to procede to the next string.>>" << endl;
+		(*currentNote) = tuning.getStringFrequency(i-1);
+	}
+	//Turning on the microphone
 }
