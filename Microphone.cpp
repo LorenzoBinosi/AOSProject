@@ -71,7 +71,6 @@ static void dmaRefill()
 	IRQdmaRefill();
 }
 
-
 /**
  * DMA end of transfer interrupt
  */
@@ -82,12 +81,12 @@ void __attribute__((naked)) DMA1_Stream3_IRQHandler()
     restoreContext();
 }
 
-
 /**
  * DMA end of transfer interrupt actual implementation
  */
 void __attribute__((used)) I2SdmaHandlerImpl()
 {
+    
 	DMA1->LIFCR=DMA_LIFCR_CTCIF3  |
                 DMA_LIFCR_CTEIF3  |
                 DMA_LIFCR_CDMEIF3 |
@@ -224,15 +223,15 @@ void Microphone::mainLoop(){
             if(enobuf){
                 enobuf = false;
                 dmaRefill();
-            }        	
+            }
             if(processPDM(getReadableBuffer(),bufferSize) == true){
                 // transcode until the specified number of PCM samples
                 break;
             }
-            bufferEmptied();
+            bufferEmptied();  
 
         }
- 
+        
         // swaps the ready and the processing buffer: allows double buffering
         //on the callback side
         unsigned short* tmp;
@@ -240,7 +239,6 @@ void Microphone::mainLoop(){
         readyBuffer = processingBuffer;
         processingBuffer = tmp;
         
-
         if (!first){
             // if the previous callback is still running, wait for it to end.
             // this implies that some samples may be lost
@@ -250,6 +248,7 @@ void Microphone::mainLoop(){
         }
         
         pthread_create(&cback,NULL,callbackLauncher,reinterpret_cast<void*>(this));
+        
     }
     
 }
@@ -266,8 +265,13 @@ bool Microphone::processPDM(const unsigned short *pdmbuffer, int size) {
     int remaining = PCMsize - PCMindex;
     int length = std::min(remaining, size); 
     // convert couples 16 pdm one-bit samples in one 16-bit PCM sample
-    for (int i=0; i < length; i++){    
+    for (int i=0; i < length; i++)
+    {    
+	//Dropping 3 samples on 4 for a decimation of 64 instead of 16
+        for (int j=0; j < 3; j++, i++)
+		PDMFilter(pdmbuffer, i);
         processingBuffer[PCMindex++] = PDMFilter(pdmbuffer, i);
+
     }
     if (PCMindex < PCMsize) //if produced PCM sample are not enough 
         return false; 
