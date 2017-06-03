@@ -16,7 +16,13 @@
 #define FFT_SIZE SAMPLES/2
 
 using namespace std;
+using namespace miosix;
 
+typedef Gpio<GPIOD_BASE,12>  greenLed;
+typedef Gpio<GPIOD_BASE,13>  orangeLed;
+typedef Gpio<GPIOD_BASE,15>  blueLed;
+
+static short empty = 0;
 static float currentNote;
 static float32_t input[SAMPLES];
 static float32_t output[FFT_SIZE];
@@ -32,6 +38,9 @@ int main()
 	bool quit;
 	Tuning *tuning;
 
+	greenLed::mode(Mode::OUTPUT);
+	orangeLed::mode(Mode::OUTPUT);
+	blueLed::mode(Mode::OUTPUT);
 	//Intro
 	cout << "Guitar Tuner version 1.0.0, by Lorenzo Binosi, Matheus Fim.\nProject for the Advanced Operating System course of M.Sc. course of Computer Science and Engineering of Politecnico di Milano.\n" << endl;
 	//Commands
@@ -153,5 +162,42 @@ void frequencyComparison(uint16_t* PCM, uint16_t  size)
     // Calculates maxValue and returns corresponding value 
     arm_max_f32(output, FFT_SIZE, &maxValue, &maxIndex);
 
-    printf("Value: %d. Index: %d. Aprox Freq: %.2f hz\n", (uint16_t) maxValue, (uint32_t)maxIndex, (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found 
+    
+    if (maxIndex == 0)
+    {
+        empty++;
+	if (empty > 5)
+	{
+	    empty = 5;
+            greenLed::low();
+            blueLed::low();
+            orangeLed::low();
+	} 
+    }
+    else
+    {
+        if ((float (maxIndex * 2.69)) > (float (currentNote + 5)))
+	{
+	    empty = 0;
+	    blueLed::high();
+	    orangeLed::low();
+	    greenLed::low();
+	}
+	else if ((float (maxIndex * 2.69)) < (float (currentNote - 5)))
+	{
+	    empty = 0;
+	    blueLed::low();
+	    orangeLed::high();
+	    greenLed::low();
+	}	
+	else
+	{
+	    empty = 0;
+	    greenLed::high();
+	    blueLed::low();
+	    orangeLed::low();
+	}
+    }
+
+    //printf("Value: %d. Index: %d. Aprox Freq: %.2f hz\n", (uint16_t) maxValue, (uint32_t)maxIndex, (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found 
 }
