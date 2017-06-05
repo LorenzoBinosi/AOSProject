@@ -62,7 +62,28 @@ int main()
 			switch (command)
 			{
 				case 'c': delete tuning;
-					  tuning = new Tuning (TuningType::DROP_D);
+					  cout << "Select the desired tuning:\n1 - Eb Standard\n2 - Drop D\n3 - E Standard\n";
+					  cout << "Tuning: ";
+					  length = 0;
+					  while((c = getchar()) != '\n' && c != EOF) 
+		   			  {
+						length++;
+						command = c;
+					  };
+					  if (length == 1)
+					  { 
+					  	switch (command)
+					  	{
+					  		case '1': tuning = new Tuning (TuningType::Eb_STANDARD);
+					  			break;	
+					  		case '2': tuning = new Tuning (TuningType::DROP_D);	
+					  			break;
+					  		case '3': tuning = new Tuning (TuningType::E_STANDARD);
+					  			break;
+					  		default: cout << "Invalid tuning." << endl;
+					  			break;
+					  	}
+					  }	
 					  break;
 				case 't': tune (*tuning);
 					  break;
@@ -176,14 +197,14 @@ void frequencyComparison(uint16_t* PCM, uint16_t  size)
     }
     else
     {
-        if ((float (maxIndex * 2.69)) > (float (currentNote + 5)))
+        if (((float32_t)((float32_t) (maxIndex * 2.69))) > (float (currentNote + 5)))
 	{
 	    empty = 0;
 	    blueLed::high();
 	    orangeLed::low();
 	    greenLed::low();
 	}
-	else if ((float (maxIndex * 2.69)) < (float (currentNote - 5)))
+	else if (((float32_t)((float32_t) (maxIndex * 2.69))) < (float (currentNote - 5)))
 	{
 	    empty = 0;
 	    blueLed::low();
@@ -199,5 +220,6 @@ void frequencyComparison(uint16_t* PCM, uint16_t  size)
 	}
     }
 
-    //printf("Value: %d. Index: %d. Aprox Freq: %.2f hz\n", (uint16_t) maxValue, (uint32_t)maxIndex, (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found 
+    //printf("Value: %d. Index: %d. Aprox Freq: %.2f hz\n", (uint16_t) maxValue, (uint32_t)maxIndex, (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found
+    printf("Aprox Freq: %.2f hz\n", (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found  
 }
