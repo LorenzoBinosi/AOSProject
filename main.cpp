@@ -26,6 +26,7 @@ static short empty = 0;
 static float currentNote;
 static float32_t input[SAMPLES];
 static float32_t output[FFT_SIZE];
+static float32_t sum[FFT_SIZE/8];
 
 void tune(Tuning);
 void frequencyComparison(uint16_t*, uint16_t);
@@ -139,13 +140,35 @@ void tune(Tuning tuning)
 	}
 }
 
+
+//Harmonic Product Spectrum 
+/* to find the fundamenta frequency that is no always the strongest one in real guitars */ 
+float32_t hps(float32_t *magFFT, int size){ 
+	
+	float32_t freq, maxValue =0;
+
+	for(int k = 0; k < size/8; k++){
+
+		sum[k] = magFFT[k] * magFFT[2*k] * magFFT[3*k];
+		
+		// find fundamental frequency
+		if( sum[k] > maxValue && k > 0 ){
+			maxValue = sum[k];
+			freq = k;
+		}
+	}
+
+	return freq * 11000 / size;
+}
+
 void frequencyComparison(uint16_t* PCM, uint16_t  size)
 {
     arm_cfft_radix4_instance_f32 S;    // ARM CFFT module 
-    float32_t maxValue;                // Max FFT value is stored here 
-    uint32_t maxIndex;                // Index in Output array where max value is 
+//    float32_t maxValue;                // Max FFT value is stored here 
+//    uint32_t maxIndex;                // Index in Output array where max value is 
     uint16_t i;
-    
+  	float32_t freq; 
+
     // first step is to adjust the pcm vector to the format of the fft function, alternating rea and imaginary parts
     for(i = 0; i < size; i++){
     
@@ -181,10 +204,10 @@ void frequencyComparison(uint16_t* PCM, uint16_t  size)
     arm_cmplx_mag_f32(input, output, FFT_SIZE);
     
     // Calculates maxValue and returns corresponding value 
-    arm_max_f32(output, FFT_SIZE, &maxValue, &maxIndex);
-
+    //arm_max_f32(output, FFT_SIZE, &maxValue, &maxIndex);
+    freq = hps(output, FFT_SIZE);
     
-    if (maxIndex == 0)
+    if (freq == 0)
     {
         empty++;
 	if (empty > 5)
@@ -195,31 +218,41 @@ void frequencyComparison(uint16_t* PCM, uint16_t  size)
             orangeLed::low();
 	} 
     }
+
     else
     {
-        if (((float32_t)((float32_t) (maxIndex * 2.69))) > (float (currentNote + 5)))
-	{
-	    empty = 0;
-	    blueLed::high();
-	    orangeLed::low();
-	    greenLed::low();
+    	if(freq > fabsf(float (currentNote + 20)))
+    	{
+    		empty = 0;
+            greenLed::low();
+            blueLed::low();
+            orangeLed::low();		
+   		}
+    	else if (freq > (float (currentNote + 1.4)))
+		{
+		    empty = 0;
+		    blueLed::high();
+		    orangeLed::low();
+		    greenLed::low();
+		}
+		else if (freq < (float (currentNote - 1.4)))
+		{
+		    empty = 0;
+		    blueLed::low();
+	   		orangeLed::high();
+	    	greenLed::low();
+		}	
+		else
+		{
+		    empty = 0;
+		    greenLed::high();
+		    blueLed::low();
+		    orangeLed::low();
+		}
 	}
-	else if (((float32_t)((float32_t) (maxIndex * 2.69))) < (float (currentNote - 5)))
-	{
-	    empty = 0;
-	    blueLed::low();
-	    orangeLed::high();
-	    greenLed::low();
-	}	
-	else
-	{
-	    empty = 0;
-	    greenLed::high();
-	    blueLed::low();
-	    orangeLed::low();
-	}
-    }
 
     //printf("Value: %d. Index: %d. Aprox Freq: %.2f hz\n", (uint16_t) maxValue, (uint32_t)maxIndex, (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found
-    printf("Aprox Freq: %.2f hz\n", (float32_t)((float32_t) maxIndex * 2.69)); // prints frequency found  
+    printf("Desired Freq: %.2f hz\t\tAprox Freq: %.2f hz\n",(float) currentNote, freq); // prints frequency found  
 }
+
+
