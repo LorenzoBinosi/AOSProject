@@ -271,7 +271,6 @@ bool Microphone::processPDM(const unsigned short *pdmbuffer, int size) {
         for (int j=0; j < 3; j++, i++)
 		PDMFilter(pdmbuffer, i);
         processingBuffer[PCMindex++] = PDMFilter(pdmbuffer, i);
-
     }
     if (PCMindex < PCMsize) //if produced PCM sample are not enough 
         return false; 
@@ -332,5 +331,3 @@ void Microphone::stop() {
 
 Microphone::~Microphone() {
 }
-
-

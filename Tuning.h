@@ -7,7 +7,10 @@ enum TuningType
 {
     E_STANDARD = 1,
     Eb_STANDARD,
-    DROP_D
+    DROP_D,
+    OPEN_E,
+    OPEN_G,
+    OPEN_A
 };
 
 class Tuning
