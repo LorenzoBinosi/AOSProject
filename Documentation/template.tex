@@ -25,6 +25,8 @@
 \usepackage[linesnumbered]{algorithm2e}
 \usepackage{multirow}
 \usepackage{multicol}
+\usepackage{float}
+\usepackage{nccmath}
 
 \usepackage{prettyref}
 \newrefformat{fig}{Figure~\ref{#1}}
@@ -69,7 +71,7 @@
 \textbf{ID} & 876022 \\[0.5cm]
 \textbf{Course} & Advanced Operating Systems \\
 \textbf{Academic Year} & 2016-2017 \\[0.5cm]
-\textbf{Advisor} & Frederico Terraneo \\ %e.g. Simone Libutti, Giuseppe Massari
+\textbf{Advisor} & Federico Terraneo \\ %e.g. Simone Libutti, Giuseppe Massari
 \textbf{Professor} & William Fornaciari \\
 \end{tabular}
 \date{\normalsize\today}
@@ -92,7 +94,6 @@
 \input{text/coding}
 
 \pagebreak
-\bibliographystyle{unsrt}
-\bibliography{text/project_bibliography}
+\input{text/bib}
 
 \end{document}
