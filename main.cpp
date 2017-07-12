@@ -226,7 +226,10 @@ void frequencyComparison(uint16_t* PCM, uint16_t  size)
 	    blueLed::low();
             orangeLed::low();
 	}
+	
+    printf("Desired Freq: %.2f hz\t\tAprox Freq: %.2f hz\n",(float) currentNote, freq); // prints frequency found 
     }
+
 }
 
 
