@@ -14,7 +14,6 @@ Tuning::Tuning (TuningType tuningType)
 
 void Tuning::setTune(TuningType tuningType)
 {
-    s = new float[6];
     switch (tuningType)
     {
         case 2: s[0] = Eb_4;
